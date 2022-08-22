@@ -1,13 +1,29 @@
-# Sample Hardhat Project
+# GeoHunt Project Smart Contracts
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
+To run:
+-Clone repo : git clone https://github.com/Yonatan19981/GHNT.git
+-Open terminal in folder
+-Run "npx install"
+-Add ".env" which includes MNEMONIC , INFURA_KEY and PRIVATE_KEY
 
-Try running some of the following tasks:
+to compile:
+```shell
+npx hardhat compile
+```
+
+before deploying, update ratio (ratio of ICO tokens BNB to tokens), amount (minimum number of tokens to buy) and _main (the account which will recieve 6 billion geohunt tokens)
+
+to deploy to mainnet:
 
 ```shell
-npx hardhat help
-npx hardhat test
-GAS_REPORT=true npx hardhat test
-npx hardhat node
 npx hardhat run scripts/deploy.ts
 ```
+
+to deploy to another network:
+
+```shell
+npx hardhat run scripts/deploy.ts --<INSERT NETWORK NAME>
+```
+
+Author: www.yonatan.expert
+link to audit:
