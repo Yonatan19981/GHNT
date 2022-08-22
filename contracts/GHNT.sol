@@ -31,4 +31,3 @@ contract GHNT is ERC20 {
 }
 
 //Author: www.yonatan.expert
-//link to audit:
