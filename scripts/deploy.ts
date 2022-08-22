@@ -19,6 +19,12 @@ async function main() {
 
   console.log(`Ghnt deployed to ${gnhtICO.address}`);
 
+  const VestingFactory = await ethers.getContractFactory("vestingFactory");
+  const vestingFactory = await VestingFactory.deploy(_main);
+
+  await vestingFactory.deployed();
+
+  console.log(`Ghnt deployed to ${vestingFactory.address}`);
 }
 
 

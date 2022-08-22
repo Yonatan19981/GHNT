@@ -1,168 +1,114 @@
 import { expect } from 'chai'
 import { ethers } from 'hardhat';
 
-let gnht
-let gnhtICO:any;
-let  wallets:any;
-describe('Futurize',() => {
+let ghnt:any
+let ghntICO:any;
+let wallets:any;
+let wallet:any;
+let ghntVesting:any;
+let vestingFactory:any;
+let ICOvestingschedule:any = [0, 0, 0, 0, 0, 20, 20, 20, 20, 20, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 20, 20, 20, 20, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 0, 0, 0, 0, 0, 0, 0, 0]
+let testschedule:any = [10, 10, 0, 0, 0, 0, 20, 20, 20, 20, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 20, 20, 20, 20, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 0, 0, 0, 0, 0, 0, 0, 0]
+
+/*
+vesting contract parameters: 
+	wallets[0].address,
+			ICOvestingschedule,
+			ICOvestingschedule.length,
+            ghnt.address,
+            ghntICO.address,
+            _amount
+*/
+describe('GHNT',() => {
 	
 
 	before(async function () {
         wallets = await ethers.getSigners();
-
-        let _main="0x87993e7a89A824D05dC5DCC8c6885A8412C525AB";
+        
+        let _main=wallets[0].address;
+        wallet=_main
         let ratio=10;
         let amount=1;
-      
+        console.log ("_main :",_main)
+
         const Ghnt = await ethers.getContractFactory("GHNT");
-        gnht = await Ghnt.deploy(_main);
+        ghnt = await Ghnt.deploy(_main);
       
-        await gnht.deployed();
+        await ghnt.deployed();
       
-        console.log(`Ghnt deployed to ${gnht.address}`);
+        console.log(`Ghnt deployed to ${ghnt.address}`);
         
         const GhntICO = await ethers.getContractFactory("ghntICO");
-        gnhtICO = await GhntICO.deploy(_main,gnht.address,ratio,amount);
+        ghntICO = await GhntICO.deploy(_main,ghnt.address,ratio,amount);
       
-        await gnhtICO.deployed();
+        await ghntICO.deployed();
+        
+        console.log(`Ghnt deployed to ${ghntICO.address}`);
+        
+        
+
+        const VestingFactory = await ethers.getContractFactory("vestingFactory");
+        vestingFactory = await VestingFactory.deploy(_main);
       
-        console.log(`Ghnt deployed to ${gnhtICO.address}`);
+        await vestingFactory.deployed();
+        
+        console.log(`Ghnt deployed to ${vestingFactory.address}`);
 
-		var FuturizeInterest = await hre.ethers.getContractFactory("FuturizeInterest");
-		futurizeInterest = await FuturizeInterest.deploy();
-	
-		console.log("FuturizeInterest deployed to:", futurizeInterest.address);
-		var FuturizeV1Factory = await hre.ethers.getContractFactory("FuturizeV1Factory");
-		futurizeV1Factory = await FuturizeV1Factory.deploy();
-	
-		console.log("FuturizeV1Factory deployed to:", futurizeV1Factory.address);
+        const balanceInEth = ethers.utils.formatEther(ethers.BigNumber.from("6000000000000000000000000000"))
+        //        expect(balanceInEth.to.equal("6000000000"))
 
-		var FuturizeV1Router = await hre.ethers.getContractFactory("FuturizeV1Router");
-		futurizeV1Router = await FuturizeV1Router.deploy(WETHaddress,futurizeV1Factory.address,futurizeInterest.address);
-	
-		console.log("FuturizeV1Router deployed to:", futurizeV1Router.address);
-		await futurizeV1Factory.setRouter(futurizeV1Router.address);
-		const UniswapV3SwapHelper = await hre.ethers.getContractFactory("UniswapV3SwapHelper");
-		uniswapV3SwapHelper = await UniswapV3SwapHelper.deploy();
-	
-		console.log("UniswapV3SwapHelper deployed to:", uniswapV3SwapHelper.address);
+        expect(balanceInEth==("6000000000")
+        );
+		});
+	it('Tests buy', async () => {
+       // await expect(token.transfer(address, 0)).to.be.reverted;
+       ghnt.transfer(ghntICO.address,3000)
+       console.log(" balance of ghntICO :",await ghnt.balanceOf(ghntICO.address))
+       console.log(" ghntICO.amount():",await ghntICO.amount())
+       console.log(" ghntICO.ratio():",await ghntICO.ratio())
 
+       
+    await expect(await ghntICO.Buy({value:100})).to.emit(ghntICO, "Bought").withArgs(1000,await ghntICO.vested(wallets[0].address));
+      // let _vested = await ghntICO.Buy({value:100})
+      // console.log("_vested")
+        //let vestingAddress=await ghntICO.Buy({value:100});
+        console.log("ghntICO.vested[wallet] :",String(await ghntICO.vested(wallet)))
+ 
+    })
 
-		uniswapFactory = new ethers.Contract(
-			uniSwapV3Factory,
-			IUniswapV3Factory,
-			wallets[0]
-		);
+    it('Tests vesting precentage', async () => {
+        
+        const GhntVesting = await ethers.getContractFactory("ghntVesting");
+        let ghntVesting:any=await GhntVesting.attach(String(await ghntICO.vested(wallet)));
+        console.log(" vesting month 6 precentage :" ,await ghntVesting.vesting(5)/1000)
+    })
 
-		WETHTOKENApoolContract = new ethers.Contract(
-			await uniswapFactory.getPool(WETHaddress,TOKENAaddress,3000),
-			IUniswapV3PoolABI,
-			wallets[0]
-		);
+    /*
+   // Manual testing of withdraw after changing contract for test:
+    it('Tests withdraw', async () => {
+        let beforeWithdraw=await ghnt.balanceOf(wallet)
+        console.log("beforeWithdraw :",beforeWithdraw)
+        await ghntICO.withdraw()
+        let afterWithdraw=await ghnt.balanceOf(wallet)
+        console.log("afterWithdraw :",afterWithdraw)
+   
+    })
+*/
 
-		const quoterAddress = "0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6";
+ // Production testing of withdraw including revert:
+ it('Tests withdraw reverted', async () => {
+    await expect(ghntICO.withdraw()).to.be.reverted;
 
-	const quoterContract = new ethers.Contract(quoterAddress, QuoterABI, wallets[0]);
-
-		
-		WETH=new hre.ethers.Contract(WETHaddress,WETHabi,wallets[0]);
-		TOKENA=new hre.ethers.Contract(TOKENAaddress,ERC20abi,wallets[0]);
-		TOKENB=new hre.ethers.Contract(TOKENBaddress,ERC20abi,wallets[0]);
-		await WETH.deposit({value:ethers.utils.parseEther("10000000000000000.0")});
-		console.log("buys TOKENA to the test wallet");
-		await WETH.approve(uniswapV3SwapHelper.address,ethers.utils.parseEther("1000.0"))    
-		await WETH.transferFrom(wallets[0].address,uniswapV3SwapHelper.address,ethers.utils.parseEther("1000.0"));
-		var amountin=await uniswapV3SwapHelper.swapExactIn(uniSwapV3SwapRouter,3000,WETHaddress,TOKENAaddress,ethers.utils.parseEther("1000.0"),10000,wallets[0].address);
-		console.log("buys TOKENB to the test wallet");
-		await WETH.approve(uniswapV3SwapHelper.address,ethers.utils.parseEther("1000.0"))    
-		await WETH.transferFrom(wallets[0].address,uniswapV3SwapHelper.address,ethers.utils.parseEther("1000.0"));
-		var amountin=await uniswapV3SwapHelper.swapExactIn(uniSwapV3SwapRouter,3000,WETHaddress,TOKENBaddress,ethers.utils.parseEther("1000.0"),10000,wallets[0].address);
-		console.log("buys TOKENA to the test wallet");
-		await WETH.approve(uniswapV3SwapHelper.address,ethers.utils.parseEther("1000.0"))    
-		var amountin=await uniswapV3SwapHelper.swapExactIn(uniSwapV3SwapRouter,3000,WETHaddress,TOKENAaddress,ethers.utils.parseEther("1000.0"),10000,wallets[0].address);
-	});
-	it('Tests', async () => {
-		
-		console.log("test add liquidity");
-		var amount1=await TOKENA.balanceOf(wallets[0].address);
-		var amount2=await TOKENB.balanceOf(wallets[0].address);
-		var deadline=await (await ethers.provider.getBlock(await ethers.provider.getBlockNumber())).timestamp+10000;
-		await TOKENA.approve(futurizeV1Router.address,amount1)    
-		await TOKENB.approve(futurizeV1Router.address,amount2)    
-		await futurizeV1Router.addLiquidity(TOKENA.address,TOKENB.address,amount1.div(10),amount2.div(10),0,0,wallets[0].address,deadline); 
-		const FuturizeV1Pair = await hre.ethers.getContractFactory("FuturizeV1Pair");
-		var pairAddress=await futurizeV1Factory.getPair(TOKENB.address,TOKENA.address);
-		var PAIR = await FuturizeV1Pair.attach(pairAddress);
-		await futurizeV1Router.addLiquidity(TOKENA.address,TOKENB.address,amount1.div(10),amount2.div(10),0,0,wallets[0].address,deadline); 
-		var liquidityAmount=await PAIR.balanceOf(wallets[0].address);
-		console.log("success");
-
-		console.log("test open position");
-		await TOKENA.approve(futurizeV1Router.address,amount1) 
-		await futurizeV1Router.openPos(TOKENA.address,TOKENB.address,amount1.div(10000),0,wallets[0].address,0,10);
-		var amount1=await TOKENA.balanceOf(wallets[0].address);
-		var amount2=await TOKENB.balanceOf(wallets[0].address);
-		console.log("success");
-
-		console.log("test remove + add liquidity");
-		await PAIR.approve(futurizeV1Router.address,liquidityAmount)  
-		await futurizeV1Router.removeLiquidity(TOKENA.address,TOKENB.address,liquidityAmount,0,0,wallets[0].address,deadline); 
-		var amount1=await TOKENA.balanceOf(wallets[0].address);
-		var amount2=await TOKENB.balanceOf(wallets[0].address);
-		await futurizeV1Router.addLiquidity(TOKENA.address,TOKENB.address,amount1.div(10),amount2.div(10),0,0,wallets[0].address,deadline); 
-		var liquidityAmount=await PAIR.balanceOf(wallets[0].address);
-		console.log("success");
-
-		console.log("test trying to close at a loss");
-		await TOKENA.approve(futurizeV1Router.address,amount1) 
-		await futurizeV1Router.openPos(TOKENA.address,TOKENB.address,amount1.div(100000000),0,wallets[0].address,0,1000);
-		var amount1=await TOKENA.balanceOf(wallets[0].address);
-		var amount2=await TOKENB.balanceOf(wallets[0].address);
-
-		try {
-			await PAIR.close(wallets[0].address,await PAIR.getPosition(wallets[0].address),0);
-
-		} catch (error) {
-			console.log("---position is at a loss which it should be---");
-		}
-		console.log("success");
-
-		console.log("test add colleteral , try to liquidate, fail because of more colleteral and close");
-		await TOKENA.approve(futurizeV1Router.address,amount1) 
-		await futurizeV1Router.addPositionColleteral(wallets[0].address,await PAIR.getPosition(wallets[0].address),TOKENA.address,TOKENB.address,amount1.div(10000));
-		try {
-			await futurizeV1Router.liquidatePosition(wallets[0].address,await PAIR.getPosition(wallets[0].address),TOKENA.address, TOKENB.address,0,3000);
-
-		} catch (error) {
-			console.log("---tried to liquidate did not succeed because colleteral was added---");
-		}
-		await PAIR.close(wallets[0].address,await PAIR.getPosition(wallets[0].address),0);
-		console.log("success");
-
-
-		console.log("test liquidate at a loss and success of liquidate");
-		await TOKENA.approve(futurizeV1Router.address,amount1) 
-		await futurizeV1Router.openPos(TOKENA.address,TOKENB.address,amount1.div(100000000),0,wallets[0].address,0,1000);
-		var amount1=await TOKENA.balanceOf(wallets[0].address);
-		var amount2=await TOKENB.balanceOf(wallets[0].address);
-
-		try {
-			await PAIR.close(wallets[0].address,await PAIR.getPosition(wallets[0].address),0);
-
-		} catch (error) {
-			console.log("---position is at a loss which it should be. now it will liquidate---");
-		}
-		await futurizeV1Router.liquidatePosition(wallets[0].address,await PAIR.getPosition(wallets[0].address),TOKENA.address, TOKENB.address,0,3000);
-		})
-		console.log("success");
-
-	
-/*
-	it('createPair:gas', async () => {
-		const { factory } = await loadFixture(fixture)
-		const tx = await factory.createPair(...TEST_ADDRESSES)
-		const receipt = await tx.wait()
-		expect(receipt.gasUsed).to.lte('331989') // previously was 2391560
-	})
-	*/
 })
+    it('Tests vesting factory', async () => {
+    ghnt.approve(vestingFactory.address,10000)
+    let testVesting=await vestingFactory.vest(wallet,ghnt.address,1000,testschedule,testschedule.length)
+    const GhntVesting = await ethers.getContractFactory("ghntVesting");
+    let testVestingContract:any=await GhntVesting.attach(String(await vestingFactory.vested(wallet)));
+    console.log("test vesting month 0 amount, ",await testVestingContract.vesting(0));
+    })
+
+})
+		
+	
+

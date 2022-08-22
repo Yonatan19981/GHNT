@@ -11,7 +11,7 @@ contract ghntVesting {
     address public user;  //user who can withdraw
     uint public amount;    //total amount allocated to user
     mapping(uint => uint) public vesting; //vesting percentage per month
-    uint month=1;   //seconds in a month;
+    uint month=2592000;   //seconds in a month;
     address token;   //address of token vested
     uint monthsPast;   // how many months in total since the begining
     uint lastTime;     //last withdraw time
@@ -39,19 +39,22 @@ contract ghntVesting {
         require(_user==user,"Only user can withdraw");
         require(monthsPast<vestingLength,"withdraw complete");
         require(block.timestamp-lastTime>month,"A month has not passed since last withdraw/withdraw complete");
-        uint _time=2;
+        uint _time=block.timestamp-lastTime;
         uint _amount=0;
         uint latest=monthsPast+_time/month;
+        console.log("latest :",latest);
         if(latest>vestingLength){
             latest=vestingLength;
         }
         for(uint z=monthsPast;z<latest;z++){
         _amount=_amount+amount*vesting[z]/1000;
         }
+        console.log("_amount :",_amount);
         require(ERC20(token).balanceOf(address(this))>=_amount,"Not enough amount to withdraw");
         monthsPast=latest;
-        ERC20(token).transferFrom(address(this),user,_amount);
+        ERC20(token).transfer(user,_amount);
         lastTime=block.timestamp;
+        console.log("ERC20(token).balanceOf(address(this)) ; :",ERC20(token).balanceOf(address(this)) );
 
 
 
