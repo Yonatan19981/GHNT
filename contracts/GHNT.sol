@@ -14,6 +14,8 @@
 */
 
 // SPDX-License-Identifier: MIT
+//Author: www.yonatan.expert
+
 pragma solidity ^0.8.16;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
@@ -28,3 +30,5 @@ contract GHNT is ERC20 {
     }
 }
 
+//Author: www.yonatan.expert
+//link to audit:

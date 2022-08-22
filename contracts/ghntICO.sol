@@ -4,10 +4,17 @@ pragma solidity ^0.8.16;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "./vesting.sol";
+import "hardhat/console.sol";
+
+interface VestingContract{
+ function withdraw(address _user) external;
+}
+
 
 contract ghntICO is ReentrancyGuard {
-
-    address fourFee=0x278b3822Fb69B3465Da008F1755de124990bC018;
+    uint [] vestingSchedule =[10, 0, 0, 0, 0, 10, 20, 20, 20, 20, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 20, 20, 20, 20, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 0, 0, 0, 0, 0, 0, 0, 0];
+    mapping(address => address) public vested;
     address ghntToken;
     uint ratio;
     uint amount;
@@ -24,24 +31,36 @@ contract ghntICO is ReentrancyGuard {
     }
 
       function Buy() public payable nonReentrant() {
+        require(vested[msg.sender]==address(0),"Wallet already bought");
         uint _amount=msg.value;
-        uint _partial=amount*4/1000;
         require(ERC20(ghntToken).balanceOf(address(this))>_amount*ratio,"Not enough ghnt tokens left in contract" );
-        payable(fourFee).transfer(_partial);
-        ERC20(ghntToken).transferFrom(address(this),msg.sender,_amount*ratio);
+        vestInternal(msg.sender,ghntToken,_amount*ratio);
         
     }
 
-    function withdraw(address _token,uint _amount) public {
+    function withdraw() public {
+        VestingContract vesting=VestingContract(vested[msg.sender]);
+        vesting.withdraw(msg.sender);
+
+    }
+  
+   function withdrawBNBAdmin(uint _amount) public {
+        require(msg.sender==admin,"Only admin can withdraw");
+        payable(admin).transfer(_amount);
+   }
+     function withdrawAdmin(address _token,uint _amount) public {
         require(msg.sender==admin,"Only admin can withdraw");
         require(_token!=address(0),"Cannot insert zero address");
         ERC20(_token).transferFrom(address(this),admin,_amount);
 
     }
-  
-   function withdrawBNB(uint _amount) public {
-        require(msg.sender==admin,"Only admin can withdraw");
-        payable(admin).transfer(_amount);
+  function vestInternal(address _user,address _token,uint _amount) internal {
+    ghntVesting vesting=new ghntVesting(_user,vestingSchedule,vestingSchedule.length,_token,address(this),_amount);
+    vested[_user]=address(vesting);
+    }
 
     }
-}
+  
+    
+
+//Author: www.yonatan.expert
