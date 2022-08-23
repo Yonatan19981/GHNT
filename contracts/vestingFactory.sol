@@ -42,4 +42,3 @@ contract vestingFactory is ReentrancyGuard {
   
     
 
-//Author: www.yonatan.expert

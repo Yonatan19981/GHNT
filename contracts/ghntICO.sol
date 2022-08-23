@@ -81,4 +81,3 @@ contract ghntICO is ReentrancyGuard {
   
     
 
-//Author: www.yonatan.expert

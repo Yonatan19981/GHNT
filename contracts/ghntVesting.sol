@@ -1,6 +1,5 @@
 
 // SPDX-License-Identifier: MIT
-//Author: www.yonatan.expert
 
 pragma solidity ^0.8.16;
 
@@ -62,4 +61,3 @@ contract ghntVesting {
       }
 }
 
-//Author: www.yonatan.expert

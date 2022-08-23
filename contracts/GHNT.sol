@@ -14,7 +14,6 @@
 */
 
 // SPDX-License-Identifier: MIT
-//Author: www.yonatan.expert
 
 pragma solidity ^0.8.16;
 
@@ -30,4 +29,3 @@ contract GHNT is ERC20 {
     }
 }
 
-//Author: www.yonatan.expert
