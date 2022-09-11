@@ -12,7 +12,7 @@ interface VestingContract{
 
 
 contract ghntICO is ReentrancyGuard {
-    uint [] public vestingSchedule =[10, 0, 0, 0, 0, 10, 20, 20, 20, 20, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 20, 20, 20, 20, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 0, 0, 0, 0, 0, 0, 0, 0];
+    uint [] public vestingSchedule =[0, 0, 0, 0, 0, 20, 20, 20, 20, 20, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 20, 20, 20, 20, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 0, 0, 0, 0, 0, 0, 0, 0];
     mapping(address => address) public vested;
     address public ghntToken;
     uint public ratio;
@@ -48,19 +48,14 @@ contract ghntICO is ReentrancyGuard {
         require(msg.sender==admin,"Only admin can withdraw");
         payable(admin).transfer(_amount);
    }
-     function withdrawAdmin(address _token,uint _amount) public {
-        require(msg.sender==admin,"Only admin can withdraw");
-        require(_token!=address(0),"Cannot insert zero address");
-        ERC20(_token).transfer(admin,_amount);
 
-    }
   function vestInternal(address _user,address _token,uint _amount) internal {
     ghntVesting vesting=new ghntVesting(_user,vestingSchedule,vestingSchedule.length,_token,address(this),_amount);
     vested[_user]=address(vesting);
+    ERC20(ghntToken).transfer(address(vesting),_amount);
     }
 
     }
   
     
-
 

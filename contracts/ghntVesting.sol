@@ -48,7 +48,7 @@ contract ghntVesting {
         }
         require(ERC20(token).balanceOf(address(this))>=_amount,"Not enough amount to withdraw");
         monthsPast=latest;
-        ERC20(token).transferFrom(address(this),user,_amount);
+        ERC20(token).transfer(user,_amount);
         lastTime=block.timestamp;
 
 
